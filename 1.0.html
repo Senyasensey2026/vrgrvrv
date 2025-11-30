@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RimWorld — Мастер создания колониста (v1.0, каркас)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #232a3b 0, #0c0f17 55%, #05060b 100%);
+            color: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 32px 12px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(8, 10, 18, 0.94);
+            border-radius: 24px;
+            padding: 24px 20px 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(120, 175, 255, 0.25);
+            display: grid;
+            grid-template-columns: minmax(0, 3.2fr) minmax(0, 2.2fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .app {
+                grid-template-columns: 1fr;
+                padding: 18px 14px 22px;
+            }
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            background: linear-gradient(90deg, #eef3ff, #8bb7ff);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #c2c7d6;
+            margin-bottom: 18px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(139, 183, 255, 0.4);
+            color: #a8c7ff;
+            margin-bottom: 10px;
+            background: rgba(16, 22, 40, 0.8);
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+
+        .step-pill {
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.9);
+            font-size: 0.75rem;
+            color: #e5e7eb;
+        }
+
+        .card {
+            background: radial-gradient(circle at top left, rgba(70, 116, 255, 0.22), rgba(7, 10, 22, 0.95));
+            border-radius: 18px;
+            padding: 16px 16px 18px;
+            border: 1px solid rgba(139, 183, 255, 0.32);
+            margin-bottom: 14px;
+        }
+
+            .card.soft {
+                background: radial-gradient(circle at top left, rgba(88, 199, 250, 0.12), rgba(9, 12, 25, 0.96));
+                border-color: rgba(148, 163, 184, 0.6);
+            }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #e5edff;
+        }
+
+        .card-tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #9fb5ff;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+            .form-row > * {
+                flex: 1;
+            }
+
+        label {
+            font-size: 0.8rem;
+            color: #cbd5f5;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+            color: #e5edff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+            input[type="text"]:focus,
+            input[type="number"]:focus,
+            select:focus {
+                border-color: rgba(129, 195, 255, 0.85);
+                box-shadow: 0 0 0 1px rgba(129, 195, 255, 0.6);
+                background: rgba(15, 23, 42, 1);
+            }
+
+        .question {
+            margin-bottom: 12px;
+        }
+
+        .question-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #e2e8f0;
+        }
+
+        .question-desc {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .options {
+            display: grid;
+            gap: 4px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.85rem;
+            padding: 5px 7px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.12s, transform 0.05s;
+        }
+
+            .option:hover {
+                background: rgba(15, 23, 42, 0.85);
+            }
+
+            .option input[type="radio"],
+            .option input[type="checkbox"] {
+                margin-top: 3px;
+                cursor: pointer;
+            }
+
+            .option span {
+                cursor: pointer;
+            }
+
+        .btn-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-group-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.12s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #60a5fa, #22c55e);
+            color: #020617;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.65);
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 14px 30px rgba(37, 99, 235, 0.8);
+            }
+
+        .btn-ghost {
+            background: transparent;
+            color: #cbd5f5;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+        }
+
+            .btn-ghost:hover {
+                background: rgba(15, 23, 42, 0.9);
+            }
+
+        .btn-secondary {
+            background: rgba(37, 99, 235, 0.16);
+            color: #bfdbfe;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+
+            .btn-secondary:hover {
+                background: rgba(37, 99, 235, 0.26);
+            }
+
+        .wizard-step {
+            display: none;
+        }
+
+            .wizard-step.active {
+                display: block;
+            }
+
+        .muted {
+            font-size: 0.78rem;
+            color: #9ca3af;
+        }
+
+        .empty-state {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .right-list {
+            margin-top: 8px;
+            padding-left: 18px;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+            .right-list li {
+                margin-bottom: 4px;
+            }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .skill-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(0, 2.3fr);
+            gap: 8px;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.6);
+        }
+
+        @media (max-width: 700px) {
+            .skill-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .skill-label {
+            font-size: 0.86rem;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+        .skill-desc {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .skill-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .skill-slider {
+            flex: 1 1 120px;
+        }
+
+        input[type="range"].skill-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            height: 4px;
+        }
+
+            input[type="range"].skill-slider::-webkit-slider-runnable-track {
+                height: 4px;
+                background: linear-gradient(90deg, #64748b, #93c5fd);
+                border-radius: 999px;
+            }
+
+            input[type="range"].skill-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: #e5f0ff;
+                margin-top: -5px;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.65);
+            }
+
+        .skill-value {
+            font-size: 0.8rem;
+            min-width: 32px;
+            text-align: right;
+            color: #e5f0ff;
+        }
+
+        .passion {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            cursor: pointer;
+            font-size: 0.9rem;
+            min-width: 56px;
+        }
+
+            .passion .flame {
+                font-size: 0.8rem;
+            }
+
+            .passion[data-value="0"] {
+                opacity: 0.65;
+            }
+
+            .passion[data-value="1"] {
+                border-color: rgba(129, 199, 255, 0.9);
+            }
+
+            .passion[data-value="2"] {
+                border-color: rgba(248, 250, 109, 0.95);
+                box-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+            }
+
+        .checklist {
+            margin-top: 4px;
+            max-height: 260px;
+            overflow-y: auto;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            padding: 8px 10px;
+            font-size: 0.82rem;
+        }
+
+        .check-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 6px;
+            align-items: flex-start;
+        }
+
+            .check-item strong {
+                display: block;
+                font-size: 0.82rem;
+            }
+
+            .check-item small {
+                display: block;
+                font-size: 0.74rem;
+                color: #9ca3af;
+            }
+
+        .xeno-grid {
+            display: grid;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .xeno-card {
+            display: flex;
+            gap: 8px;
+            padding: 7px 9px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            cursor: pointer;
+            transition: background 0.12s, border 0.12s;
+            font-size: 0.82rem;
+        }
+
+            .xeno-card:hover {
+                background: rgba(15, 23, 42, 0.99);
+                border-color: rgba(129, 195, 255, 0.9);
+            }
+
+            .xeno-card h4 {
+                font-size: 0.9rem;
+                margin-bottom: 2px;
+            }
+
+        .xeno-tagline {
+            font-size: 0.75rem;
+            color: #a5b4fc;
+            margin-bottom: 2px;
+        }
+
+        .xeno-card p {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .result-header {
+            margin-bottom: 10px;
+        }
+
+        .result-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .result-sub {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+
+        .pill {
+            font-size: 0.75rem;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            color: #e5e7eb;
+        }
+
+        .result-block {
+            margin-bottom: 12px;
+        }
+
+        .result-block-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3ff;
+            margin-bottom: 4px;
+        }
+
+        .skills-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        @media (max-width: 480px) {
+            .skills-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .skill-item {
+            font-size: 0.8rem;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 11px;
+            padding: 5px 9px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+        }
+
+        .skill-score small {
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+
+        .balance-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+            .balance-pill.ok {
+                background: rgba(22, 163, 74, 0.15);
+                border: 1px solid rgba(22, 163, 74, 0.6);
+                color: #bbf7d0;
+            }
+
+            .balance-pill.weak {
+                background: rgba(59, 130, 246, 0.12);
+                border: 1px solid rgba(59, 130, 246, 0.6);
+                color: #bfdbfe;
+            }
+
+            .balance-pill.strong {
+                background: rgba(234, 179, 8, 0.18);
+                border: 1px solid rgba(234, 179, 8, 0.7);
+                color: #facc15;
+            }
+
+            .balance-pill.op {
+                background: rgba(248, 113, 113, 0.18);
+                border: 1px solid rgba(248, 113, 113, 0.7);
+                color: #fecaca;
+            }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Левая колонка -->
+        <div>
+            <div class="badge">
+                <span class="badge-dot"></span>
+                RimWorld фан-генератор
+            </div>
+            <h1>Создай себя как колониста</h1>
+            <div class="subtitle">
+                v1.0 — многостраничный мастер с 220+ вопросами, навыками 0–20, предысториями, чертами и балансом.
+            </div>
+
+            <div class="step-indicator">
+                <span class="step-pill" id="step-pill">Шаг 1</span>
+                <span id="step-label">Базовая информация</span>
+            </div>
+
+            <form id="wizard-form">
+                <!-- ШАГ 1. БАЗОВАЯ ИНФОРМАЦИЯ -->
+                <div class="wizard-step active" data-step="1">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 1. Базовая информация</div>
+                            <div class="card-tag">Основы персонажа</div>
+                        </div>
+
+                        <div class="form-row">
+                            <div>
+                                <label for="name">Имя / ник *</label>
+                                <input id="name" name="name" type="text" placeholder="Например, Bambuker" required>
+                            </div>
+                            <div>
+                                <label for="age">Возраст *</label>
+                                <input id="age" name="age" type="number" min="14" max="120" placeholder="25" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div>
+                                <label for="gender">Пол (опционально)</label>
+                                <select id="gender" name="gender">
+                                    <option value="">Не указывать</option>
+                                    <option value="male">Мужской</option>
+                                    <option value="female">Женский</option>
+                                    <option value="other">Другое / сложно</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="playstyle">Стиль игры в RimWorld</label>
+                                <select id="playstyle" name="playstyle">
+                                    <option value="">Выбери основной стиль</option>
+                                    <option value="tactician">Тактик / боец</option>
+                                    <option value="builder">Строитель / инженер</option>
+                                    <option value="farmer">Фермер / снабженец</option>
+                                    <option value="scientist">Учёный / исследователь</option>
+                                    <option value="social">Лидер / дипломат</option>
+                                    <option value="artist">Художник / настроенец</option>
+                                    <option value="universal">Универсал / как получится</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 1.3 Вайб персонажа -->
+                        <div class="question">
+                            <div class="question-title">1.1 Вайб персонажа</div>
+                            <div class="question-desc">Общее ощущение от персонажа, если бы он был пешкой.</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="vibe" value="calm"><span>Спокойный и надёжный выживший.</span></label>
+                                <label class="option"><input type="radio" name="vibe" value="chaotic"><span>Хаотичный гений, любитель экспериментов.</span></label>
+                                <label class="option"><input type="radio" name="vibe" value="dark"><span>Скрытный, с тяжёлым прошлым.</span></label>
+                                <label class="option"><input type="radio" name="vibe" value="bright"><span>Оптимист, тащит настроение колонии.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.4 Любимый цвет -->
+                        <div class="question">
+                            <div class="question-title">1.2 Любимый цвет персонажа</div>
+                            <div class="question-desc">Повлияет только на flavor-описание и стиль одежды.</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="fav_color" value="green"><span>Зелёный</span></label>
+                                <label class="option"><input type="radio" name="fav_color" value="blue"><span>Синий / голубой</span></label>
+                                <label class="option"><input type="radio" name="fav_color" value="red"><span>Красный</span></label>
+                                <label class="option"><input type="radio" name="fav_color" value="yellow"><span>Жёлтый / оранжевый</span></label>
+                                <label class="option"><input type="radio" name="fav_color" value="dark"><span>Тёмные тона</span></label>
+                                <label class="option"><input type="radio" name="fav_color" value="pastel"><span>Пастельные/мягкие цвета</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.5 Реакция на неожиданности -->
+                        <div class="question">
+                            <div class="question-title">1.3 Как персонаж реагирует на резкие неожиданные события?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="base_surprise" value="freeze"><span>Сначала замирает, оценивает ситуацию.</span></label>
+                                <label class="option"><input type="radio" name="base_surprise" value="act"><span>Сразу действует, даже если решение не идеально.</span></label>
+                                <label class="option"><input type="radio" name="base_surprise" value="joke"><span>Шутит, пытается разрядить обстановку.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.6 Комфорт -->
+                        <div class="question">
+                            <div class="question-title">1.4 Насколько персонажу важен комфорт?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="base_comfort" value="low"><span>Комфорт почти не важен, главное выжить.</span></label>
+                                <label class="option"><input type="radio" name="base_comfort" value="mid"><span>Хочется нормальных условий, но терпит многое.</span></label>
+                                <label class="option"><input type="radio" name="base_comfort" value="high"><span>Без уюта быстро нервничает и раздражается.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.7 Сон -->
+                        <div class="question">
+                            <div class="question-title">1.5 Какой у персонажа режим сна?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="sleep_pattern" value="short"><span>Мало спит, часто недосыпает, но живёт.</span></label>
+                                <label class="option"><input type="radio" name="sleep_pattern" value="normal"><span>Почти здоровый режим сна.</span></label>
+                                <label class="option"><input type="radio" name="sleep_pattern" value="long"><span>Любит поспать подольше, без будильников.</span></label>
+                                <label class="option"><input type="radio" name="sleep_pattern" value="chaotic"><span>Сон хаотичный, без режима.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.8 Еда -->
+                        <div class="question">
+                            <div class="question-title">1.6 Отношение к еде в реальной жизни</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="food_attitude" value="simple"><span>Неприхотлив(а), главное чтобы можно было есть.</span></label>
+                                <label class="option"><input type="radio" name="food_attitude" value="picky"><span>Переборчив(а), есть требования к качеству/типу еды.</span></label>
+                                <label class="option"><input type="radio" name="food_attitude" value="gourmet"><span>Любит вкусно поесть, ценит кулинарию.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.9 К оффлайн-людям -->
+                        <div class="question">
+                            <div class="question-title">1.7 Насколько легко персонажу заводить новые знакомства?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="new_people" value="hard"><span>Очень тяжело, предпочитает узкий круг.</span></label>
+                                <label class="option"><input type="radio" name="new_people" value="normal"><span>Нормально, но без лишнего фанатизма.</span></label>
+                                <label class="option"><input type="radio" name="new_people" value="easy"><span>Легко знакомится, любит новых людей.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.10 Настроение -->
+                        <div class="question">
+                            <div class="question-title">1.8 Как часто у персонажа «падает» настроение?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="mood_swings" value="rare"><span>Редко, обычно держится ровно.</span></label>
+                                <label class="option"><input type="radio" name="mood_swings" value="sometimes"><span>Иногда бывают заметные провалы.</span></label>
+                                <label class="option"><input type="radio" name="mood_swings" value="often"><span>Часто, настроение скачет.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.11 Страхи -->
+                        <div class="question">
+                            <div class="question-title">1.9 Насколько персонаж тревожный/мнительный?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="anxiety" value="low"><span>Почти не тревожится, ко всему относится спокойно.</span></label>
+                                <label class="option"><input type="radio" name="anxiety" value="mid"><span>Иногда переживает, но держит под контролем.</span></label>
+                                <label class="option"><input type="radio" name="anxiety" value="high"><span>Склонен к тревоге и накручиванию.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.12 Хаос vs порядок -->
+                        <div class="question">
+                            <div class="question-title">1.10 Предпочтение по стилю жизни</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="life_style" value="structured"><span>Любит планирование, чёткий порядок.</span></label>
+                                <label class="option"><input type="radio" name="life_style" value="balanced"><span>Немного порядка, немного импровизации.</span></label>
+                                <label class="option"><input type="radio" name="life_style" value="chaotic"><span>Живёт в хаосе, действует по ситуации.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 1.13 Мотивация -->
+                        <div class="question">
+                            <div class="question-title">1.11 Что сильнее всего мотивирует персонажа?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="motivation" value="money"><span>Деньги, ресурсы, материальная выгода.</span></label>
+                                <label class="option"><input type="radio" name="motivation" value="respect"><span>Уважение, статус, признание.</span></label>
+                                <label class="option"><input type="radio" name="motivation" value="curiosity"><span>Интерес, исследования, новые знания.</span></label>
+                                <label class="option"><input type="radio" name="motivation" value="care"><span>Забота о других, желание помочь.</span></label>
+                                <label class="option"><input type="radio" name="motivation" value="freedom"><span>Свобода, независимость, своё мнение.</span></label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ШАГ 2. ДЕТСТВО -->
+                <div class="wizard-step" data-step="2">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 2. Происхождение и детство</div>
+                            <div class="card-tag">Childhood</div>
+                        </div>
+
+                        <!-- 2.1 Место детства -->
+                        <div class="question">
+                            <div class="question-title">2.1 Где ты в основном рос(ла)?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_place" value="tribal"><span>Племя / деревня / дикая местность.</span></label>
+                                <label class="option"><input type="radio" name="child_place" value="rural"><span>Небольшой город / посёлок.</span></label>
+                                <label class="option"><input type="radio" name="child_place" value="urban"><span>Крупный город, много людей и технологий.</span></label>
+                                <label class="option"><input type="radio" name="child_place" value="underground"><span>Шахты, подземелья, бункеры.</span></label>
+                                <label class="option"><input type="radio" name="child_place" value="space"><span>Орбитальные/космические станции.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.2 Занятия взрослых -->
+                        <div class="question">
+                            <div class="question-title">2.2 Чем в основном занимались взрослые вокруг?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_adults_work" value="farm"><span>Фермы, животные, поля.</span></label>
+                                <label class="option"><input type="radio" name="child_adults_work" value="industry"><span>Заводы, стройки, тяжёлый труд.</span></label>
+                                <label class="option"><input type="radio" name="child_adults_work" value="science"><span>Наука, медицина, технологии.</span></label>
+                                <label class="option"><input type="radio" name="child_adults_work" value="trade"><span>Торговля, услуги, общение с людьми.</span></label>
+                                <label class="option"><input type="radio" name="child_adults_work" value="crime"><span>Серая/криминальная деятельность.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.3 Уровень образования -->
+                        <div class="question">
+                            <div class="question-title">2.3 Уровень формального образования в детстве</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_education" value="none"><span>Почти нет формального образования.</span></label>
+                                <label class="option"><input type="radio" name="child_education" value="basic"><span>Обычная школа.</span></label>
+                                <label class="option"><input type="radio" name="child_education" value="advanced"><span>Дополнительные кружки, секции, техника.</span></label>
+                                <label class="option"><input type="radio" name="child_education" value="elite"><span>Элитное/специализированное обучение.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.4 Главная активность -->
+                        <div class="question">
+                            <div class="question-title">2.4 Главное занятие в детстве</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_main_activity" value="wild"><span>Исследовал(а) мир, шлялся(ась) по улицам/природе.</span></label>
+                                <label class="option"><input type="radio" name="child_main_activity" value="help_family"><span>Помогал(а) семье, хозяйству, ферме.</span></label>
+                                <label class="option"><input type="radio" name="child_main_activity" value="books"><span>Сидел(а) дома, книги, игры, компьютер.</span></label>
+                                <label class="option"><input type="radio" name="child_main_activity" value="trouble"><span>Часто влипал(а) в неприятности.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.5 Общее настроение детства -->
+                        <div class="question">
+                            <div class="question-title">2.5 Общее ощущение детства</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_mood" value="calm"><span>Стабильное и относительно спокойное.</span></label>
+                                <label class="option"><input type="radio" name="child_mood" value="hard"><span>Тяжёлое, много стресса и проблем.</span></label>
+                                <label class="option"><input type="radio" name="child_mood" value="chaotic"><span>Хаотичное, постоянные перемены и переезды.</span></label>
+                                <label class="option"><input type="radio" name="child_mood" value="spoiled"><span>Скорее избалованное, много свободы/внимания.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.6 Конфликты -->
+                        <div class="question">
+                            <div class="question-title">2.6 Как часто ты сталкивался(ась) с агрессией/насилием в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_conflict" value="rare"><span>Редко, в целом было безопасно.</span></label>
+                                <label class="option"><input type="radio" name="child_conflict" value="sometimes"><span>Иногда происходило что-то тревожное.</span></label>
+                                <label class="option"><input type="radio" name="child_conflict" value="often"><span>Очень часто, это была норма.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.7 Среда -->
+                        <div class="question">
+                            <div class="question-title">2.7 Где проводил(а) больше всего времени в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_env_pref" value="indoors"><span>В помещениях (дома, школа, кружки).</span></label>
+                                <label class="option"><input type="radio" name="child_env_pref" value="outdoors"><span>На улице, в лесу, в поле, на природе.</span></label>
+                                <label class="option"><input type="radio" name="child_env_pref" value="mixed"><span>Примерно поровну.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.8 Отношение к технике -->
+                        <div class="question">
+                            <div class="question-title">2.8 Был ли у тебя доступ к технике/компьютерам в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_tech" value="none"><span>Почти нет, всё было очень аналогово.</span></label>
+                                <label class="option"><input type="radio" name="child_tech" value="limited"><span>Редкий доступ, по праздникам.</span></label>
+                                <label class="option"><input type="radio" name="child_tech" value="normal"><span>Обычный уровень — консоли, ПК, телефон.</span></label>
+                                <label class="option"><input type="radio" name="child_tech" value="high"><span>Много техники, интерес к железу/программам.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.9 Здоровье в детстве -->
+                        <div class="question">
+                            <div class="question-title">2.9 Как часто болел(а) в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_health" value="healthy"><span>Редко болел(а), крепкий иммунитет.</span></label>
+                                <label class="option"><input type="radio" name="child_health" value="average"><span>Иногда болел(а), как все.</span></label>
+                                <label class="option"><input type="radio" name="child_health" value="weak"><span>Часто болел(а), много больниц.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.10 Ответственность -->
+                        <div class="question">
+                            <div class="question-title">2.10 Насколько рано на тебя легла ответственность?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_responsibility" value="late"><span>Долго оставался(ась) «ребёнком», мало обязанностей.</span></label>
+                                <label class="option"><input type="radio" name="child_responsibility" value="normal"><span>Постепенно, как у большинства.</span></label>
+                                <label class="option"><input type="radio" name="child_responsibility" value="early"><span>Очень рано пришлось многое тащить.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.11 Детские хобби -->
+                        <div class="question">
+                            <div class="question-title">2.11 Что из этого лучше описывает твои детские хобби?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_hobby" value="craft"><span>Лепка, конструкторы, поделки, DIY.</span></label>
+                                <label class="option"><input type="radio" name="child_hobby" value="sport"><span>Спорт, подвижные игры, драки на подушках.</span></label>
+                                <label class="option"><input type="radio" name="child_hobby" value="art"><span>Рисование, музыка, творчество.</span></label>
+                                <label class="option"><input type="radio" name="child_hobby" value="logic"><span>Головоломки, книги, компьютер.</span></label>
+                                <label class="option"><input type="radio" name="child_hobby" value="social"><span>Компании, тусовки, друзья.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.12 Конфликтность ребёнка -->
+                        <div class="question">
+                            <div class="question-title">2.12 Насколько конфликтным ребёнком ты был(а)?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_conflict_style" value="avoid"><span>Старался(ась) избегать конфликтов.</span></label>
+                                <label class="option"><input type="radio" name="child_conflict_style" value="argue"><span>Мог(ла) спорить и отстаивать своё.</span></label>
+                                <label class="option"><input type="radio" name="child_conflict_style" value="fight"><span>Легко шёл(шла) в драку/жёсткое противостояние.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.13 Детский авторитет -->
+                        <div class="question">
+                            <div class="question-title">2.13 У кого был самый большой авторитет в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_authority" value="parents"><span>Родители/опекуны.</span></label>
+                                <label class="option"><input type="radio" name="child_authority" value="friends"><span>Друзья/старшие ребята.</span></label>
+                                <label class="option"><input type="radio" name="child_authority" value="teacher"><span>Учителя, тренеры, наставники.</span></label>
+                                <label class="option"><input type="radio" name="child_authority" value="none"><span>Ни у кого, всё проверял(а) сам(а).</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 2.14 Детские страхи -->
+                        <div class="question">
+                            <div class="question-title">2.14 Что больше всего пугало в детстве?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="child_fear" value="isolation"><span>Оказаться одному/одной, быть покинутым(ой).</span></label>
+                                <label class="option"><input type="radio" name="child_fear" value="violence"><span>Насилие, драки, опасные люди.</span></label>
+                                <label class="option"><input type="radio" name="child_fear" value="failure"><span>Ошибки, провалы, наказания.</span></label>
+                                <label class="option"><input type="radio" name="child_fear" value="unknown"><span>Неизвестное, темнота, странные места.</span></label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ШАГ 3. ВЗРОСЛАЯ ЖИЗНЬ -->
+                <div class="wizard-step" data-step="3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 3. Текущая жизнь и профессия</div>
+                            <div class="card-tag">Adulthood</div>
+                        </div>
+
+                        <!-- 3.1 Сфера занятости -->
+                        <div class="question">
+                            <div class="question-title">3.1 Сфера основной занятости сейчас</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="current_job" value="student"><span>Учёба.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="office_it"><span>Офис, IT, аналитика, дизайн.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="manual"><span>Физический труд, стройка, производство.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="creative"><span>Творчество, контент, арт.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="service"><span>Сервис, торговля, поддержка.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="med_help"><span>Медицина, помощь людям.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="logistics"><span>Логистика, транспорт, склады.</span></label>
+                                <label class="option"><input type="radio" name="current_job" value="mixed"><span>Фриланс/микс всего.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.2 Типичная среда -->
+                        <div class="question">
+                            <div class="question-title">3.2 Типичная среда сейчас</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="current_env" value="office_city"><span>Город, офисы, коворкинги.</span></label>
+                                <label class="option"><input type="radio" name="current_env" value="workshop_factory"><span>Мастерские, заводы, склады.</span></label>
+                                <label class="option"><input type="radio" name="current_env" value="home_remote"><span>Дом, удалёнка.</span></label>
+                                <label class="option"><input type="radio" name="current_env" value="outdoor"><span>Улица, природа, постоянные выезды.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.3 Стресс -->
+                        <div class="question">
+                            <div class="question-title">3.3 Текущий уровень стресса</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="current_stress" value="low"><span>Невысокий, удаётся отдыхать.</span></label>
+                                <label class="option"><input type="radio" name="current_stress" value="medium"><span>Средний, иногда нервничаю.</span></label>
+                                <label class="option"><input type="radio" name="current_stress" value="high"><span>Высокий, постоянно что-то давит.</span></label>
+                                <label class="option"><input type="radio" name="current_stress" value="extreme"><span>Почти постоянный экстремальный режим.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.4 Смена работы -->
+                        <div class="question">
+                            <div class="question-title">3.4 Как часто ты меняешь работу/сферу?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="career_changes" value="rare"><span>Редко, ценю стабильность.</span></label>
+                                <label class="option"><input type="radio" name="career_changes" value="some"><span>Несколько раз уже менял(а).</span></label>
+                                <label class="option"><input type="radio" name="career_changes" value="often"><span>Часто пробую новые сферы.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.5 Кол-во проектов -->
+                        <div class="question">
+                            <div class="question-title">3.5 Сколько активных дел/проектов обычно ведёшь параллельно?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="parallel_projects" value="one"><span>Стараюсь заниматься чем-то одним.</span></label>
+                                <label class="option"><input type="radio" name="parallel_projects" value="few"><span>2–3 проекта одновременно.</span></label>
+                                <label class="option"><input type="radio" name="parallel_projects" value="many"><span>Много всего параллельно.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.6 Отношение к рутине -->
+                        <div class="question">
+                            <div class="question-title">3.6 Как относишься к рутинной однообразной работе?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="routine_attitude" value="hate"><span>Ненавижу, быстро выгораю.</span></label>
+                                <label class="option"><input type="radio" name="routine_attitude" value="tolerate"><span>Нормально переношу, если вижу смысл.</span></label>
+                                <label class="option"><input type="radio" name="routine_attitude" value="like"><span>Даже люблю стабильную рутину.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.7 Работа руками vs головой -->
+                        <div class="question">
+                            <div class="question-title">3.7 Что тебе проще даётся сейчас?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="work_type" value="hands"><span>Работа руками, физическая активность.</span></label>
+                                <label class="option"><input type="radio" name="work_type" value="mixed"><span>Смешанный вариант, и руками, и головой.</span></label>
+                                <label class="option"><input type="radio" name="work_type" value="mind"><span>Аналитика, планирование, логика.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.8 Свобода vs контроль -->
+                        <div class="question">
+                            <div class="question-title">3.8 Какой стиль управления тебе комфортнее?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="management_style" value="free"><span>Свобода, минимум контроля, сам решаю.</span></label>
+                                <label class="option"><input type="radio" name="management_style" value="balanced"><span>Баланс: есть рамки, но и автономия.</span></label>
+                                <label class="option"><input type="radio" name="management_style" value="strict"><span>Чёткие указания, понятные правила.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.9 Отношение к риску в жизни -->
+                        <div class="question">
+                            <div class="question-title">3.9 Насколько ты склонен(на) рисковать в реальной жизни?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="rl_risk" value="avoid"><span>Избегаю риска по максимуму.</span></label>
+                                <label class="option"><input type="radio" name="rl_risk" value="moderate"><span>Иногда могу рискнуть, но с расчётом.</span></label>
+                                <label class="option"><input type="radio" name="rl_risk" value="high"><span>Люблю рисковать, часто делаю ставку на удачу.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 3.10 Отношение к конфликтам сейчас -->
+                        <div class="question">
+                            <div class="question-title">3.10 Как ты сейчас входишь в конфликты?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="adult_conflict_style" value="avoid"><span>Стараюсь уходить от конфликтов.</span></label>
+                                <label class="option"><input type="radio" name="adult_conflict_style" value="discuss"><span>Предпочитаю обсуждать и договариваться.</span></label>
+                                <label class="option"><input type="radio" name="adult_conflict_style" value="hard"><span>Могу идти до жёсткого конфликта, если надо.</span></label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ШАГ 4. НАВЫКИ 0–20 -->
+                <div class="wizard-step" data-step="4">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 4. Жизненные навыки</div>
+                            <div class="card-tag">Skills 0–20</div>
+                        </div>
+                        <div class="question-desc" style="margin-bottom:8px;">
+                            0–20: 0 — не умею, 5 — базовый уровень, 10 — уверенно, 15 — очень хорошо, 20 — почти профи.
+                            Огоньки 🔥 — интерес (0, 1 или 2).
+                        </div>
+                        <div class="skills-grid" id="skills-grid"></div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 5. БОЙ И РИСК -->
+                <div class="wizard-step" data-step="5">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 5. Бой, опасность и выживание</div>
+                            <div class="card-tag">Combat & Risk</div>
+                        </div>
+
+                        <!-- 5.1 Отношение к бою -->
+                        <div class="question">
+                            <div class="question-title">5.1 Отношение к бою</div>
+                            <div class="question-desc">Как твой персонаж относится к прямому сражению?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="combat_style" value="avoid"><span>Избегает боёв, если есть хоть какой-то вариант.</span></label>
+                                <label class="option"><input type="radio" name="combat_style" value="ranged"><span>Предпочитает стрельбу на расстоянии.</span></label>
+                                <label class="option"><input type="radio" name="combat_style" value="melee"><span>Предпочитает ближний бой и личное участие.</span></label>
+                                <label class="option"><input type="radio" name="combat_style" value="tactician"><span>Сам может не быть супербойцом, но любит тактику и командование.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.2 Отношение к риску в бою -->
+                        <div class="question">
+                            <div class="question-title">5.2 Готовность рисковать в бою</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="risk_attitude" value="risk_averse"><span>Старается минимизировать риск, защищает себя.</span></label>
+                                <label class="option"><input type="radio" name="risk_attitude" value="balanced"><span>Готов рискнуть, если ситуация этого требует.</span></label>
+                                <label class="option"><input type="radio" name="risk_attitude" value="risk_seeker"><span>Любит риск, может лезть в авантюры.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.3 Реакция на угрозу -->
+                        <div class="question">
+                            <div class="question-title">5.3 Как персонаж реагирует на внезапную угрозу (рейд, нападение зверя)?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="combat_reaction" value="hide"><span>Сначала прячется, ищет укрытие.</span></label>
+                                <label class="option"><input type="radio" name="combat_reaction" value="defend"><span>Занимает оборонительную позицию и прикрывает других.</span></label>
+                                <label class="option"><input type="radio" name="combat_reaction" value="charge"><span>Бросается вперёд в атаку.</span></label>
+                                <label class="option"><input type="radio" name="combat_reaction" value="coordinate"><span>Старается руководить, раздавать указания.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.4 Хладнокровие -->
+                        <div class="question">
+                            <div class="question-title">5.4 Хладнокровие в стрессе</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="combat_calm" value="panic"><span>Легко паникует и теряется.</span></label>
+                                <label class="option"><input type="radio" name="combat_calm" value="shaky"><span>Волновался бы сильно, но всё же действовал.</span></label>
+                                <label class="option"><input type="radio" name="combat_calm" value="calm"><span>Относительно спокоен, держит себя в руках.</span></label>
+                                <label class="option"><input type="radio" name="combat_calm" value="cold"><span>Очень хладнокровен, иногда даже чересчур.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.5 Отношение к оружию -->
+                        <div class="question">
+                            <div class="question-title">5.5 Отношение к оружию</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="weapon_attitude" value="dislike"><span>Оружие не любит, но понимает необходимость.</span></label>
+                                <label class="option"><input type="radio" name="weapon_attitude" value="neutral"><span>Нормально относится, как к инструменту.</span></label>
+                                <label class="option"><input type="radio" name="weapon_attitude" value="enthusiast"><span>Любит оружие, интересуется тактикой и сборками.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.6 Нападение vs защита -->
+                        <div class="question">
+                            <div class="question-title">5.6 Что персонажу ближе в бою?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="combat_role" value="tank"><span>Принимать удар на себя, защищать других.</span></label>
+                                <label class="option"><input type="radio" name="combat_role" value="dps"><span>Наносить урон, но самому не получать.</span></label>
+                                <label class="option"><input type="radio" name="combat_role" value="support"><span>Поддержка, лечение, баффы.</span></label>
+                                <label class="option"><input type="radio" name="combat_role" value="scout"><span>Разведка, ловушки, скрытность.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.7 Отношение к крови/жестокости -->
+                        <div class="question">
+                            <div class="question-title">5.7 Насколько персонажу тяжело видеть кровь/жестокость?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="violence_tolerance" value="low"><span>Очень тяжело, может травмироваться психически.</span></label>
+                                <label class="option"><input type="radio" name="violence_tolerance" value="mid"><span>Неприятно, но терпит.</span></label>
+                                <label class="option"><input type="radio" name="violence_tolerance" value="high"><span>Относится скорее спокойно.</span></label>
+                                <label class="option"><input type="radio" name="violence_tolerance" value="enjoy"><span>Жёсткость почти не трогает, иногда даже нравится.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.8 Пленники и враги -->
+                        <div class="question">
+                            <div class="question-title">5.8 Как бы персонаж относился к пленникам и побеждённым врагам?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="prisoner_attitude" value="kind"><span>Старался бы относиться гуманно и по возможности отпускать.</span></label>
+                                <label class="option"><input type="radio" name="prisoner_attitude" value="neutral"><span>Относился бы прагматично: труд/обмен/вербовка.</span></label>
+                                <label class="option"><input type="radio" name="prisoner_attitude" value="harsh"><span>Считал бы, что с врагами можно обращаться жёстко.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.9 Любимые типы задач в бою -->
+                        <div class="question">
+                            <div class="question-title">5.9 Какие боевые задачи кажутся интереснее всего?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="combat_task" value="positioning"><span>Продумывать позиции и укрытия.</span></label>
+                                <label class="option"><input type="radio" name="combat_task" value="micro"><span>«Микроконтроль» отдельных бойцов.</span></label>
+                                <label class="option"><input type="radio" name="combat_task" value="preparation"><span>Подготовка ловушек, укреплений.</span></label>
+                                <label class="option"><input type="radio" name="combat_task" value="charge"><span>Прямой штурм и агрессивные атаки.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 5.10 Самопожертвование -->
+                        <div class="question">
+                            <div class="question-title">5.10 Готовность к самопожертвованию ради колонии</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="self_sacrifice" value="low"><span>Скорее выберет личное выживание.</span></label>
+                                <label class="option"><input type="radio" name="self_sacrifice" value="mid"><span>Готов пожертвовать собой в исключительных случаях.</span></label>
+                                <label class="option"><input type="radio" name="self_sacrifice" value="high"><span>Если нужно — пойдёт на самопожертвование ради других.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 6. СОЦИАЛКА И ЛИДЕРСТВО -->
+                <div class="wizard-step" data-step="6">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 6. Люди, общение и мораль</div>
+                            <div class="card-tag">Social & Morale</div>
+                        </div>
+
+                        <!-- 6.1 Социальная роль -->
+                        <div class="question">
+                            <div class="question-title">6.1 Типичная социальная роль</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="social_role" value="introvert"><span>Интроверт, предпочитает тишину и одиночество.</span></label>
+                                <label class="option"><input type="radio" name="social_role" value="observer"><span>Наблюдатель, любит быть рядом, но без центра внимания.</span></label>
+                                <label class="option"><input type="radio" name="social_role" value="talker"><span>Душа компании, много общается.</span></label>
+                                <label class="option"><input type="radio" name="social_role" value="leader"><span>Лидер, который любит направлять других.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.2 Эмпатия -->
+                        <div class="question">
+                            <div class="question-title">6.2 Уровень эмпатии</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="empathy" value="low"><span>Трудно сочувствовать другим, больше фокус на фактах.</span></label>
+                                <label class="option"><input type="radio" name="empathy" value="medium"><span>Может сопереживать, но иногда отстраняется.</span></label>
+                                <label class="option"><input type="radio" name="empathy" value="high"><span>Легко чувствует эмоции других, сильно переживает.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.3 Мораль vs выживание -->
+                        <div class="question">
+                            <div class="question-title">6.3 Что важнее: мораль или выживание?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="morality" value="strict"><span>Строгая мораль: есть то, что делать нельзя ни при каких условиях.</span></label>
+                                <label class="option"><input type="radio" name="morality" value="flexible"><span>Гибкая мораль: можно идти на компромиссы.</span></label>
+                                <label class="option"><input type="radio" name="morality" value="pragmatic"><span>Чистый прагматизм: выживание первично, потом всё остальное.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.4 Поддержка vs критика -->
+                        <div class="question">
+                            <div class="question-title">6.4 Как персонаж обычно говорит с другими о их ошибках?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="feedback_style" value="soft"><span>Мягко, поддерживающе, старается не ранить.</span></label>
+                                <label class="option"><input type="radio" name="feedback_style" value="direct"><span>Прямо, но без злобы — важно, чтобы стало лучше.</span></label>
+                                <label class="option"><input type="radio" name="feedback_style" value="harsh"><span>Резко, может задеть, но считает, что так честнее.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.5 Отношение к чужим -->
+                        <div class="question">
+                            <div class="question-title">6.5 Отношение к новым людям в колонии</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="stranger_attitude" value="closed"><span>Недоверие к незнакомцам, долго привыкает.</span></label>
+                                <label class="option"><input type="radio" name="stranger_attitude" value="neutral"><span>Нейтрален, оценивает по поступкам.</span></label>
+                                <label class="option"><input type="radio" name="stranger_attitude" value="open"><span>Быстро принимает новых людей.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.6 Командование -->
+                        <div class="question">
+                            <div class="question-title">6.6 Насколько персонажу комфортно командовать другими?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="command_comfort" value="low"><span>Не любит командовать, избегает лидерских ролей.</span></label>
+                                <label class="option"><input type="radio" name="command_comfort" value="mid"><span>Может руководить, если это необходимо.</span></label>
+                                <label class="option"><input type="radio" name="command_comfort" value="high"><span>Нравится управление, ощущает себя лидером.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.7 Конфликты в группе -->
+                        <div class="question">
+                            <div class="question-title">6.7 Реакция на конфликты между другими членами колонии</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="group_conflict" value="ignore"><span>Старается не вмешиваться.</span></label>
+                                <label class="option"><input type="radio" name="group_conflict" value="mediate"><span>Пытается всех помирить и урегулировать.</span></label>
+                                <label class="option"><input type="radio" name="group_conflict" value="side"><span>Становится на чью-то сторону и активно поддерживает.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.8 Юмор -->
+                        <div class="question">
+                            <div class="question-title">6.8 Место юмора в поведении персонажа</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="humor_style" value="dry"><span>Сухой, редкий юмор.</span></label>
+                                <label class="option"><input type="radio" name="humor_style" value="balanced"><span>Умеренный юмор, уместный по ситуации.</span></label>
+                                <label class="option"><input type="radio" name="humor_style" value="clown"><span>Много шутит, часто разряжает обстановку.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.9 Самостоятельность -->
+                        <div class="question">
+                            <div class="question-title">6.9 Степень самостоятельности</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="independence" value="low"><span>Предпочитает, чтобы решения принимал кто-то ещё.</span></label>
+                                <label class="option"><input type="radio" name="independence" value="mid"><span>Может сам принимать решения, но не всегда.</span></label>
+                                <label class="option"><input type="radio" name="independence" value="high"><span>Предпочитает сам решать почти всё.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 6.10 Отношение к слабым -->
+                        <div class="question">
+                            <div class="question-title">6.10 Отношение к слабым и уязвимым в группе</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="weak_attitude" value="burden"><span>Считает их нагрузкой для колонии.</span></label>
+                                <label class="option"><input type="radio" name="weak_attitude" value="neutral"><span>Нейтрален, допускает их существование.</span></label>
+                                <label class="option"><input type="radio" name="weak_attitude" value="protect"><span>Считает важным защищать и поддерживать слабых.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 7. ТВОРЧЕСТВО И ПОРЯДОК -->
+                <div class="wizard-step" data-step="7">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 7. Творчество, уют и порядок</div>
+                            <div class="card-tag">Art & Order</div>
+                        </div>
+
+                        <!-- 7.1 Важность красоты -->
+                        <div class="question">
+                            <div class="question-title">7.1 Насколько важны красота и оформление базы?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="art_importance" value="low"><span>Вообще не важно, главное функционал.</span></label>
+                                <label class="option"><input type="radio" name="art_importance" value="medium"><span>Неплохо бы, но не критично.</span></label>
+                                <label class="option"><input type="radio" name="art_importance" value="high"><span>Очень важно, без уюта и красоты жить тяжело.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.2 Перфекционизм -->
+                        <div class="question">
+                            <div class="question-title">7.2 Перфекционизм персонажа</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="perfectionism" value="low"><span>«И так сойдёт», не будет тратить время на идеал.</span></label>
+                                <label class="option"><input type="radio" name="perfectionism" value="medium"><span>Есть стремление делать хорошо, но без фанатизма.</span></label>
+                                <label class="option"><input type="radio" name="perfectionism" value="high"><span>Любит доводить всё до идеала, может тратить много времени.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.3 Аккуратность -->
+                        <div class="question">
+                            <div class="question-title">7.3 Аккуратность в быту</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="tidiness" value="messy"><span>Живёт в хаосе, бардак не особо мешает.</span></label>
+                                <label class="option"><input type="radio" name="tidiness" value="normal"><span>Средний уровень порядка.</span></label>
+                                <label class="option"><input type="radio" name="tidiness" value="tidy"><span>Любит порядок, долго терпеть грязь не может.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.4 Творчество ради себя -->
+                        <div class="question">
+                            <div class="question-title">7.4 Насколько персонажу важны творческие занятия «для себя»?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="self_art" value="low"><span>Почти не интересуется творчеством.</span></label>
+                                <label class="option"><input type="radio" name="self_art" value="mid"><span>Иногда творит ради отдыха.</span></label>
+                                <label class="option"><input type="radio" name="self_art" value="high"><span>Творчество — важная часть жизни.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.5 Приоритет комфорта vs эффективности -->
+                        <div class="question">
+                            <div class="question-title">7.5 Что персонаж ставит выше при строительстве базы?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="build_priority" value="efficiency"><span>Максимальная эффективность и удобство работы.</span></label>
+                                <label class="option"><input type="radio" name="build_priority" value="balanced"><span>Баланс между практичностью и уютом.</span></label>
+                                <label class="option"><input type="radio" name="build_priority" value="aesthetic"><span>Красота и атмосфера важнее скорости.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.6 Любимые виды искусства -->
+                        <div class="question">
+                            <div class="question-title">7.6 Какой вид творчества ближе всего?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="fav_art_type" value="visual"><span>Визуальное искусство (рисунок, скульптура, 3D-модели).</span></label>
+                                <label class="option"><input type="radio" name="fav_art_type" value="music"><span>Музыка и звук.</span></label>
+                                <label class="option"><input type="radio" name="fav_art_type" value="writing"><span>Тексты, истории, лор.</span></label>
+                                <label class="option"><input type="radio" name="fav_art_type" value="none"><span>Не тянет к искусству.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.7 Реакция на некрасивую, но эффективную базу -->
+                        <div class="question">
+                            <div class="question-title">7.7 Реакция персонажа на уродливую, но эффективную базу</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="ugly_base_reaction" value="ok"><span>Главное — выживание, внешний вид неважен.</span></label>
+                                <label class="option"><input type="radio" name="ugly_base_reaction" value="annoy"><span>Немного раздражает, но терпимо.</span></label>
+                                <label class="option"><input type="radio" name="ugly_base_reaction" value="hate"><span>Очень раздражает, хочется всё переделать.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 7.8 Личные вещи -->
+                        <div class="question">
+                            <div class="question-title">7.8 Важны ли для персонажа личные вещи и украшения?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="personal_items" value="low"><span>Неважно, можно жить и без декоративных предметов.</span></label>
+                                <label class="option"><input type="radio" name="personal_items" value="mid"><span>Несколько любимых вещей важны.</span></label>
+                                <label class="option"><input type="radio" name="personal_items" value="high"><span>Любит коллекционировать и украшать пространство.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 8. УЧЁБА И МЫШЛЕНИЕ -->
+                <div class="wizard-step" data-step="8">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 8. Обучение, мышление и решения</div>
+                            <div class="card-tag">Intellect & Learning</div>
+                        </div>
+
+                        <!-- 8.1 Скорость обучения -->
+                        <div class="question">
+                            <div class="question-title">8.1 Как быстро персонаж обычно осваивает новое?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="learning_speed" value="slow"><span>Медленно, нужно время и повторения.</span></label>
+                                <label class="option"><input type="radio" name="learning_speed" value="normal"><span>В целом нормально, как у большинства.</span></label>
+                                <label class="option"><input type="radio" name="learning_speed" value="fast"><span>Быстро хватает суть и запоминает.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 8.2 Теория против практики -->
+                        <div class="question">
+                            <div class="question-title">8.2 Теория или практика ближе?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="theory_practice" value="theory"><span>Любит теорию, анализ, концепции.</span></label>
+                                <label class="option"><input type="radio" name="theory_practice" value="balanced"><span>Баланс теории и практики.</span></label>
+                                <label class="option"><input type="radio" name="theory_practice" value="practice"><span>Предпочитает сразу делать руками, теорию по минимуму.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 8.3 Стиль мышления -->
+                        <div class="question">
+                            <div class="question-title">8.3 Какой стиль мышления ближе всего?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="thinking_style" value="logical"><span>Логический, структурный, пошаговый.</span></label>
+                                <label class="option"><input type="radio" name="thinking_style" value="intuitive"><span>Интуитивный, на основе ощущений.</span></label>
+                                <label class="option"><input type="radio" name="thinking_style" value="creative"><span>Ассоциативный, креативный, нестандартный.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 8.4 Решение задач -->
+                        <div class="question">
+                            <div class="question-title">8.4 Предпочтительный способ решения сложных задач</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="problem_solving" value="solo"><span>Пробует решать в одиночку.</span></label>
+                                <label class="option"><input type="radio" name="problem_solving" value="discuss"><span>Обсуждает с другими, собирает мнения.</span></label>
+                                <label class="option"><input type="radio" name="problem_solving" value="delegate"><span>Старается перекинуть задачу тому, кто лучше разбирается.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 8.5 Отношение к науке -->
+                        <div class="question">
+                            <div class="question-title">8.5 Отношение к науке и исследованиям</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="science_attitude" value="low"><span>Не интересуется наукой и исследованиями.</span></label>
+                                <label class="option"><input type="radio" name="science_attitude" value="mid"><span>Интересуется, но без фанатизма.</span></label>
+                                <label class="option"><input type="radio" name="science_attitude" value="high"><span>Сильно тянет к исследованиям и новым знаниям.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 8.6 Терпение к рутине обучения -->
+                        <div class="question">
+                            <div class="question-title">8.6 Насколько хватает терпения учиться долго и однообразно?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="study_patience" value="low"><span>Быстро надоедает, сложно заставить себя.</span></label>
+                                <label class="option"><input type="radio" name="study_patience" value="mid"><span>Может терпеть, если есть цель.</span></label>
+                                <label class="option"><input type="radio" name="study_patience" value="high"><span>Спокойно может долго и нудно учиться.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 9. ТЕЛО И ВЫНОСЛИВОСТЬ -->
+                <div class="wizard-step" data-step="9">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 9. Тело, здоровье и привычки</div>
+                            <div class="card-tag">Body & Health</div>
+                        </div>
+
+                        <!-- 9.1 Выносливость -->
+                        <div class="question">
+                            <div class="question-title">9.1 Насколько персонаж вынослив физически?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="endurance" value="low"><span>Быстро устаёт, тяжело переносит нагрузки.</span></label>
+                                <label class="option"><input type="radio" name="endurance" value="medium"><span>Средняя выносливость.</span></label>
+                                <label class="option"><input type="radio" name="endurance" value="high"><span>Легко переносит длительные нагрузки.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 9.2 Отношение к спорту -->
+                        <div class="question">
+                            <div class="question-title">9.2 Отношение к спорту и тренировкам</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="sport" value="hate"><span>Не любит спорт, избегает, если можно.</span></label>
+                                <label class="option"><input type="radio" name="sport" value="neutral"><span>Иногда что-то делает, но без системы.</span></label>
+                                <label class="option"><input type="radio" name="sport" value="love"><span>Регулярно тренируется, любит физическую нагрузку.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 9.3 Боль -->
+                        <div class="question">
+                            <div class="question-title">9.3 Как персонаж переносит физическую боль?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="pain_tolerance" value="low"><span>Сложно переносит, сильно отвлекает.</span></label>
+                                <label class="option"><input type="radio" name="pain_tolerance" value="mid"><span>Терпит, но недолго.</span></label>
+                                <label class="option"><input type="radio" name="pain_tolerance" value="high"><span>Может долго работать, несмотря на боль.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 9.4 Режим дня -->
+                        <div class="question">
+                            <div class="question-title">9.4 Насколько стабилен режим дня персонажа?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="day_routine" value="chaotic"><span>Очень хаотичный, без расписания.</span></label>
+                                <label class="option"><input type="radio" name="day_routine" value="mid"><span>Есть базовый режим, но часто нарушается.</span></label>
+                                <label class="option"><input type="radio" name="day_routine" value="stable"><span>Стабильный режим, почти всегда одинаковый.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 9.5 Отношение к экстремальным условиям -->
+                        <div class="question">
+                            <div class="question-title">9.5 Как относишься к холоду/жаре и экстремальным условиям?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="extreme_env" value="avoid"><span>Очень не люблю, стараюсь не попадать.</span></label>
+                                <label class="option"><input type="radio" name="extreme_env" value="tolerate"><span>Терплю при необходимости.</span></label>
+                                <label class="option"><input type="radio" name="extreme_env" value="like"><span>Люблю челлендж, экстремальные условия даже нравятся.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 10. ОБЩИЙ УРОВЕНЬ МОДИФИКАЦИЙ -->
+                <div class="wizard-step" data-step="10">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 10. Образ персонажа и модификации</div>
+                            <div class="card-tag">Biotech flavor</div>
+                        </div>
+
+                        <!-- 10.1 Уровень модификаций -->
+                        <div class="question">
+                            <div class="question-title">10.1 Насколько ксеномодифицирован персонаж?</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="xeno_level" value="baseline"><span>Почти обычный человек.</span></label>
+                                <label class="option"><input type="radio" name="xeno_level" value="light"><span>Пара лёгких модификаций.</span></label>
+                                <label class="option"><input type="radio" name="xeno_level" value="mid"><span>Серьёзно модифицирован.</span></label>
+                                <label class="option"><input type="radio" name="xeno_level" value="wild"><span>Почти монстр.</span></label>
+                            </div>
+                        </div>
+
+                        <!-- 10.2 Отношение к ксеномодификациям -->
+                        <div class="question">
+                            <div class="question-title">10.2 Отношение к генетическим и бионическим модификациям в целом</div>
+                            <div class="options">
+                                <label class="option"><input type="radio" name="bio_attitude" value="negative"><span>Скептичен, старается избегать модификаций.</span></label>
+                                <label class="option"><input type="radio" name="bio_attitude" value="neutral"><span>Нейтрален, зависит от пользы и цены.</span></label>
+                                <label class="option"><input type="radio" name="bio_attitude" value="positive"><span>Видит в этом будущее человечества.</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ШАГ 11. БОЛЕЗНИ -->
+                <div class="wizard-step" data-step="11">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 11. Здоровье: болезни</div>
+                            <div class="card-tag">Diseases</div>
+                        </div>
+                        <div class="question-desc">
+                            Выбери болезни, с которыми живёт персонаж (если есть). Это повлияет на описание и баланс.
+                            Ничего не выбирай, если считаешь персонажа условно здоровым.
+                        </div>
+                        <div class="checklist">
+                            <!-- каждая строка — отдельная «болезнь-вопрос» -->
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="asthma">
+                                <div>
+                                    <strong>Астма</strong>
+                                    <small>Периодически тяжело дышать, выносливость ниже.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="chronic_pain">
+                                <div>
+                                    <strong>Хроническая боль</strong>
+                                    <small>Постоянный дискомфорт, иногда мешает работать и спать.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="bad_back">
+                                <div>
+                                    <strong>Проблемы со спиной</strong>
+                                    <small>Тяжело таскать тяжести и долго стоять.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="scar_pain">
+                                <div>
+                                    <strong>Старые шрамы</strong>
+                                    <small>Старые раны периодически напоминают о себе.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="heart">
+                                <div>
+                                    <strong>Сердечная слабость</strong>
+                                    <small>Сложно переносить высокие нагрузки и стресс.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="immunity_low">
+                                <div>
+                                    <strong>Слабый иммунитет</strong>
+                                    <small>Часто болеет простудами и инфекциями.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="migraine">
+                                <div>
+                                    <strong>Мигрени</strong>
+                                    <small>Периодические сильные головные боли, мешают концентрироваться.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="insomnia">
+                                <div>
+                                    <strong>Бессонница</strong>
+                                    <small>Трудно выспаться, часто ходит уставшим.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="depression">
+                                <div>
+                                    <strong>Депрессивные эпизоды</strong>
+                                    <small>Иногда теряет мотивацию и интерес к жизни.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="anxiety_disorder">
+                                <div>
+                                    <strong>Тревожное расстройство</strong>
+                                    <small>Много беспокоится, тяжело расслабиться.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="addiction_soft">
+                                <div>
+                                    <strong>Лёгкая зависимость</strong>
+                                    <small>Привычка, без которой тяжело, но жить можно (кофе, никотин и т.п.).</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="diseases" value="addiction_hard">
+                                <div>
+                                    <strong>Тяжёлая зависимость</strong>
+                                    <small>Сильно влияет на жизнь и решения персонажа.</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="hint">
+                            Это всё опционально. Чем больше серьёзных болезней — тем слабее персонаж по балансу, но интереснее история.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 12. ПРОТЕЗЫ И ИМПЛАНТЫ -->
+                <div class="wizard-step" data-step="12">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 12. Протезы и импланты</div>
+                            <div class="card-tag">Prosthetics</div>
+                        </div>
+                        <div class="question-desc">
+                            Выбери протезы и импланты, если у персонажа есть искусственные части тела или усиления.
+                            Каждый имплант даёт бонусы, но повлияет на баланс.
+                        </div>
+                        <div class="checklist">
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="peg_leg">
+                                <div>
+                                    <strong>Деревянная нога</strong>
+                                    <small>Простой протез, хуже здоровой конечности.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="simple_prosthetic_leg">
+                                <div>
+                                    <strong>Простой протез ноги</strong>
+                                    <small>Немного хуже нормальной, но лучше чем ничего.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="bionic_leg">
+                                <div>
+                                    <strong>Бионическая нога</strong>
+                                    <small>Быстрее бегает и лучше двигается, чем обычный человек.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="simple_prosthetic_arm">
+                                <div>
+                                    <strong>Простой протез руки</strong>
+                                    <small>Снижает точность и ловкость по сравнению с нормой.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="bionic_arm">
+                                <div>
+                                    <strong>Бионическая рука</strong>
+                                    <small>Очень сильная и точная рука, плюс к труду и бою.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="archotech_arm">
+                                <div>
+                                    <strong>Архотек-рука</strong>
+                                    <small>Почти нечестно сильная конечность с огромными бонусами.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="bionic_eye">
+                                <div>
+                                    <strong>Бионический глаз</strong>
+                                    <small>Повышает точность, восприятие, качество стрельбы и работы.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="archotech_eye">
+                                <div>
+                                    <strong>Архотек-глаз</strong>
+                                    <small>Нереально крутое зрение, почти сверхчеловеческое.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="neuro_trainer">
+                                <div>
+                                    <strong>Нейроимпланты обучения</strong>
+                                    <small>Быстрее учится новому, лучше запоминает.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="painstopper">
+                                <div>
+                                    <strong>Блокиратор боли</strong>
+                                    <small>Почти не чувствует боль, но может не замечать травмы.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="implants" value="joywire">
+                                <div>
+                                    <strong>Модулятор радости</strong>
+                                    <small>Всегда почти доволен, но немного «не в себе».</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="hint">
+                            Сильные бионические и архотек-импланты будут «стоить» много по балансу и притянут более тяжёлые недостатки/болезни.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 13. ГЕНЫ -->
+                <div class="wizard-step" data-step="13">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 13. Гены</div>
+                            <div class="card-tag">Genes</div>
+                        </div>
+                        <div class="question-desc">
+                            Выбери несколько генов, которые могли бы описывать твой ксенотип.
+                            Сильные гены будут уравновешиваться недостатками и общим балансом персонажа.
+                        </div>
+                        <div class="checklist">
+                            <!-- Положительные / нейтральные -->
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="strong_body">
+                                <div>
+                                    <strong>Сильное тело</strong>
+                                    <small>Выше сила и выносливость, чем у обычного человека.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="fast_runner">
+                                <div>
+                                    <strong>Быстрый бегун</strong>
+                                    <small>Ходит и бегает заметно быстрее.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="sharp_mind">
+                                <div>
+                                    <strong>Острый ум</strong>
+                                    <small>Быстрее исследует и обучается.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="night_vision">
+                                <div>
+                                    <strong>Ночное зрение</strong>
+                                    <small>Хорошо видит в темноте, меньше штрафы ночью.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="cold_resistant">
+                                <div>
+                                    <strong>Устойчивость к холоду</strong>
+                                    <small>Легче переносит низкие температуры.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="heat_resistant">
+                                <div>
+                                    <strong>Устойчивость к жаре</strong>
+                                    <small>Легче переносит жару и перегрев.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="slow_aging">
+                                <div>
+                                    <strong>Замедленное старение</strong>
+                                    <small>Медленнее стареет, дольше остаётся в форме.</small>
+                                </div>
+                            </label>
+
+                            <!-- Отрицательные / компенсирующие -->
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="fragile">
+                                <div>
+                                    <strong>Хрупкое тело</strong>
+                                    <small>Легче получает травмы, хуже переносит ранения.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="slow_runner">
+                                <div>
+                                    <strong>Медленный</strong>
+                                    <small>Передвигается заметно медленнее обычного.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="poor_immunity">
+                                <div>
+                                    <strong>Плохой иммунитет</strong>
+                                    <small>Чаще заражается и дольше болеет.</small>
+                                </div>
+                            </label>
+                            <label class="check-item">
+                                <input type="checkbox" name="genes" value="unstable_mood">
+                                <div>
+                                    <strong>Нестабильное настроение</strong>
+                                    <small>Сильные перепады настроения, сложный характер.</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="hint">
+                            Постарайся не выбирать только сильные гены — система баланса всё равно добавит компенсации (черты, болезни, ограничения).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ШАГ 14. КСЕНОТИП -->
+                <div class="wizard-step" data-step="14">
+                    <div class="card soft">
+                        <div class="card-header">
+                            <div class="card-title">Шаг 14. Ксенотип</div>
+                            <div class="card-tag">Xenotype</div>
+                        </div>
+                        <div class="question-desc">
+                            Выбери ксенотип, который лучше всего описывает персонажа по духу.
+                            Это влияет на итоговое описание и flavor, а также немного на баланс.
+                        </div>
+
+                        <div class="xeno-grid">
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="baseline" style="margin-top:3px;">
+                                <div>
+                                    <h4>Базелайн (обычный человек)</h4>
+                                    <div class="xeno-tagline">Практически без генетических отклонений.</div>
+                                    <p>Сбалансированный вариант без ярко выраженных преимуществ и недостатков. Хорошая база для «честного» персонажа.</p>
+                                </div>
+                            </label>
+
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="highmate" style="margin-top:3px;">
+                                <div>
+                                    <h4>Хаймейт</h4>
+                                    <div class="xeno-tagline">Социально-ориентированный ксенотип.</div>
+                                    <p>Общительный, харизматичный, отлично влияет на настроение других. Хуже в грубой работе и бою, но силён в социалке.</p>
+                                </div>
+                            </label>
+
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="sanguophage" style="margin-top:3px;">
+                                <div>
+                                    <h4>Сангвофаг</h4>
+                                    <div class="xeno-tagline">Почти вампир.</div>
+                                    <p>Сильный, живучий, с крутейшими физическими характеристиками, но с тяжёлыми моральными и игровыми последствиями.</p>
+                                </div>
+                            </label>
+
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="genie" style="margin-top:3px;">
+                                <div>
+                                    <h4>Гений</h4>
+                                    <div class="xeno-tagline">Специалист по технологиям.</div>
+                                    <p>Гениален в исследованиях и технике, но физически слаб, не любит грубую работу и бой.</p>
+                                </div>
+                            </label>
+
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="waster" style="margin-top:3px;">
+                                <div>
+                                    <h4>Вейстер</h4>
+                                    <div class="xeno-tagline">Токсичный выживший.</div>
+                                    <p>Лучше переносит токсичную среду и радиацию, но мораль и здоровье оставляют желать лучшего.</p>
+                                </div>
+                            </label>
+
+                            <label class="xeno-card">
+                                <input type="radio" name="xenotype" value="custom_mix" style="margin-top:3px;">
+                                <div>
+                                    <h4>Кастомный микс</h4>
+                                    <div class="xeno-tagline">Нечто среднее/нестандартное.</div>
+                                    <p>Персонаж, собранный из разных генов и черт. Характер и способности больше зависят от твоих ответов, чем от «готового» шаблона.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="hint">
+                            Если сомневаешься — выбери «Кастомный микс» или «Базелайн». Система подстроит описание под твои ответы и гены.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- КНОПКИ НАВИГАЦИИ -->
+                <div class="btn-bar">
+                    <button type="button" class="btn-ghost" id="reset-btn">Сбросить всё</button>
+                    <div class="btn-group-right">
+                        <button type="button" class="btn-secondary" id="prev-btn" disabled>Назад</button>
+                        <button type="button" class="btn-primary" id="next-btn">Далее</button>
+                    </div>
+                </div>
+                <div class="hint">
+                    При переходе на следующий шаг будет появляться предупреждение, если что-то не заполнено, но ты всё равно сможешь идти дальше.
+                </div>
+            </form>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: РЕЗУЛЬТАТ -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Персонаж</div>
+                    <div class="card-tag">Результат</div>
+                </div>
+                <div id="result">
+                    <div class="empty-state">
+                        Заполни шаги и на последнем нажми <strong>«Создать персонажа»</strong>, чтобы увидеть
+                        предысторию, черты, навыки, гены и ксенотип.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card soft">
+                <div class="card-header">
+                    <div class="card-title">Подсказки</div>
+                    <div class="card-tag">Гайд</div>
+                </div>
+                <ul class="right-list">
+                    <li>Старайся отвечать честно — генератор подстроит под это предысторию и черты.</li>
+                    <li>Мощные гены и импланты будут уравновешиваться слабостями, болезнями и минус-черточками.</li>
+                    <li>Навыки 0–20 + огоньки интереса 🔥 позволяют перенести себя в RimWorld почти один-в-один.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЧАСТЬ 5: логика на JS (шаги, навыки, баланс, предыстории, черты) -->
+    <script>
+        (function () {
+            // ========= НАСТРОЙКИ =========
+            const STEP_TITLES = [
+                "Базовая информация",
+                "Происхождение и детство",
+                "Текущая жизнь и профессия",
+                "Жизненные навыки",
+                "Бой, опасность и выживание",
+                "Люди, общение и мораль",
+                "Творчество, уют и порядок",
+                "Обучение, мышление и решения",
+                "Тело, здоровье и привычки",
+                "Образ персонажа и модификации",
+                "Здоровье: болезни",
+                "Протезы и импланты",
+                "Гены",
+                "Ксенотип"
+            ];
+
+            // Навыки (слайдер 0–20 + интерес)
+            const SKILL_CONFIG = [
+                {
+                    id: "shooting",
+                    label: "Стрельба (Shooting)",
+                    desc: "Огнестрельное оружие, меткость, реакция."
+                },
+                {
+                    id: "melee",
+                    label: "Ближний бой (Melee)",
+                    desc: "Драки, ножи, рукопашка."
+                },
+                {
+                    id: "construction",
+                    label: "Строительство (Construction)",
+                    desc: "Сборка, ремонт, работа с инструментами и руками."
+                },
+                {
+                    id: "mining",
+                    label: "Добыча (Mining)",
+                    desc: "Копать, ломать, работать с тяжёлым инструментом."
+                },
+                {
+                    id: "cooking",
+                    label: "Кулинария (Cooking)",
+                    desc: "Готовка, рецепты, кухня, санитария пищи."
+                },
+                {
+                    id: "plants",
+                    label: "Растения (Plants)",
+                    desc: "Фермерство, сад, огород, работа с живыми культурами."
+                },
+                {
+                    id: "animals",
+                    label: "Животные (Animals)",
+                    desc: "Обращение с животными, дрессировка, уход."
+                },
+                {
+                    id: "crafting",
+                    label: "Ремесло (Crafting)",
+                    desc: "Сборка, 3D-печать, мелкий ремонт, ручная работа."
+                },
+                {
+                    id: "artistic",
+                    label: "Искусство (Artistic)",
+                    desc: "Дизайн, визуальное творчество, эстетика."
+                },
+                {
+                    id: "social",
+                    label: "Социальные (Social)",
+                    desc: "Переговоры, убеждение, общение с людьми."
+                },
+                {
+                    id: "intellectual",
+                    label: "Интеллект (Intellectual)",
+                    desc: "Аналитика, логика, исследования, сложные задачи."
+                },
+                {
+                    id: "medical",
+                    label: "Медицина (Medical)",
+                    desc: "Первая помощь, физиология, аккуратность с людьми."
+                },
+                {
+                    id: "tech",
+                    label: "Технологии / IT",
+                    desc: "Компьютеры, электроника, софт, автоматизация."
+                },
+                {
+                    id: "management",
+                    label: "Организация и менеджмент",
+                    desc: "Планирование, распределение задач, ответственность."
+                },
+                {
+                    id: "logistics",
+                    label: "Логистика и планирование ресурсов",
+                    desc: "Склады, транспорт, снабжение, маршруты."
+                },
+                {
+                    id: "stealth",
+                    label: "Незаметность / скрытность",
+                    desc: "Тихие действия, обходной путь, избегание внимания."
+                }
+            ];
+
+            // Какие гены считаем условно «плюсовыми», а какие «минусовыми» для баланса
+            const POSITIVE_GENES = ["strong_body", "fast_runner", "sharp_mind", "night_vision", "cold_resistant", "heat_resistant", "slow_aging"];
+            const NEGATIVE_GENES = ["fragile", "slow_runner", "poor_immunity", "unstable_mood"];
+
+            const POWER_IMPLANTS = ["bionic_leg", "bionic_arm", "archotech_arm", "bionic_eye", "archotech_eye", "neuro_trainer", "painstopper", "joywire"];
+            const WEAK_IMPLANTS = ["peg_leg", "simple_prosthetic_leg", "simple_prosthetic_arm"];
+
+            // ========= ПРЕДЫСТОРИИ (фан-логика, вдохновлённая RimWorld) =========
+
+            const CHILDHOOD_BACKSTORIES = [
+                {
+                    id: "tribal_child",
+                    title: "Дитя племени",
+                    tags: ["tribal", "nature", "outdoors", "lowtech"],
+                    desc: "С детства привык к жизни на природе, кострам и ручному труду. Чтение и технологии давались сложнее, чем работа руками."
+                },
+                {
+                    id: "village_helper",
+                    title: "Деревенский помощник",
+                    tags: ["rural", "farm", "animals", "plants"],
+                    desc: "С ранних лет помогал на хозяйстве, знал, как ухаживать за животными и следить за полями."
+                },
+                {
+                    id: "street_urchin",
+                    title: "Уличный сорванец",
+                    tags: ["urban", "trouble", "outdoors", "rough"],
+                    desc: "Много времени проводил на улицах большого города, быстро научился выживать в непростой обстановке."
+                },
+                {
+                    id: "bookworm_child",
+                    title: "Книжный ребёнок",
+                    tags: ["books", "indoors", "science"],
+                    desc: "Детство прошло за книгами и играми дома. Умел мечтать и размышлять, но мало занимался физическим трудом."
+                },
+                {
+                    id: "moving_child",
+                    title: "Ребёнок переездов",
+                    tags: ["chaotic", "mixed_env"],
+                    desc: "Постоянные переезды и перемены сделали его гибким, но лишили чувства стабильности."
+                },
+                {
+                    id: "strict_child",
+                    title: "Воспитан строгими",
+                    tags: ["hard", "responsible", "discipline"],
+                    desc: "С ранних лет приучен к дисциплине и ответственности. Ошибки не прощались, зато характер закалился."
+                }
+            ];
+
+            const ADULTHOOD_BACKSTORIES = [
+                {
+                    id: "office_analyst",
+                    title: "Офисный аналитик",
+                    tags: ["office", "it", "intellectual", "social_mid"],
+                    desc: "Работал в офисе с документами, цифрами и людьми. Силен в логике и планировании, но не привык к тяжёлому труду."
+                },
+                {
+                    id: "manual_worker",
+                    title: "Рабочий / строитель",
+                    tags: ["manual", "construction", "mining", "outdoor"],
+                    desc: "Много лет проводил на стройках и в мастерских. Знает цену физическому труду и практическим навыкам."
+                },
+                {
+                    id: "creative_maker",
+                    title: "Творец и ремесленник",
+                    tags: ["creative", "art", "crafting"],
+                    desc: "Сочетает творчество и ремесло: делает вещи руками, придумывает дизайн и детали."
+                },
+                {
+                    id: "service_worker",
+                    title: "Работник сервиса",
+                    tags: ["service", "social", "people"],
+                    desc: "Привык иметь дело с людьми, сглаживать конфликты и держать лицо даже в сложных ситуациях."
+                },
+                {
+                    id: "medic_helper",
+                    title: "Помощник медика",
+                    tags: ["med", "care", "empathy"],
+                    desc: "Помогал врачам и пациентам, умеет заботиться и не боится крови, но знает цену человеческой хрупкости."
+                },
+                {
+                    id: "logistics_manager",
+                    title: "Логист / координатор",
+                    tags: ["logistics", "management", "planning"],
+                    desc: "Отвечал за поставки, запасы и координацию. Любит, когда все ресурсы учитываются и лежат по полочкам."
+                },
+                {
+                    id: "freelance_juggler",
+                    title: "Фрилансер-джагглер",
+                    tags: ["mixed", "chaotic", "projects_many"],
+                    desc: "Брался за кучу параллельных дел, привык к неопределённости и смене задач."
+                }
+            ];
+
+            // ========= ЧЕРТЫ ХАРАКТЕРА (положительные и отрицательные) =========
+
+            const TRAITS = [
+                // Позитивные
+                { id: "hard_worker", label: "Трудоголик", type: "good", tags: ["responsible", "study_high", "endurance_high"] },
+                { id: "optimist", label: "Оптимист", type: "good", tags: ["bright", "mood_stable"] },
+                { id: "kind", label: "Добрый", type: "good", tags: ["empathy_high", "care"] },
+                { id: "nimble", label: "Ловкий", type: "good", tags: ["fast_runner", "stealth", "melee"] },
+                { id: "careful_shooter", label: "Аккуратный стрелок", type: "good", tags: ["shooting", "calm"] },
+                { id: "fast_learner", label: "Быстро учится", type: "good", tags: ["learning_fast", "intellectual"] },
+                { id: "iron_will", label: "Железная воля", type: "good", tags: ["stress_high", "cold_blood"] },
+
+                // Негативные
+                { id: "lazy", label: "Ленивый", type: "bad", tags: ["routine_hate", "study_low"] },
+                { id: "neurotic", label: "Невротик", type: "bad", tags: ["anxiety_high", "unstable_mood"] },
+                { id: "abrasive", label: "Резкий", type: "bad", tags: ["feedback_harsh", "social_low"] },
+                { id: "slob", label: "Неряха", type: "bad", tags: ["messy", "tidiness_low"] },
+                { id: "wimp", label: "Слабак", type: "bad", tags: ["pain_low", "endurance_low"] },
+                { id: "pyro", label: "Пироман (фан)", type: "bad", tags: ["chaotic", "fire_love"] }
+            ];
+
+            // ========= УТИЛИТЫ =========
+
+            function $(selector) {
+                return document.querySelector(selector);
+            }
+
+            function $all(selector) {
+                return Array.from(document.querySelectorAll(selector));
+            }
+
+            function getRadioValue(name) {
+                const checked = document.querySelector(`input[type="radio"][name="${name}"]:checked`);
+                return checked ? checked.value : null;
+            }
+
+            function getCheckedValues(name) {
+                return $all(`input[type="checkbox"][name="${name}"]:checked`).map(c => c.value);
+            }
+
+            function randChoice(arr) {
+                if (!arr.length) return null;
+                return arr[Math.floor(Math.random() * arr.length)];
+            }
+
+            function shuffle(arr) {
+                const a = arr.slice();
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            // ========= ИНИЦИАЛИЗАЦИЯ НАВЫКОВ =========
+
+            function initSkills() {
+                const grid = $("#skills-grid");
+                if (!grid) return;
+
+                SKILL_CONFIG.forEach(skill => {
+                    const row = document.createElement("div");
+                    row.className = "skill-row";
+
+                    const left = document.createElement("div");
+                    const label = document.createElement("div");
+                    label.className = "skill-label";
+                    label.textContent = skill.label;
+                    const desc = document.createElement("div");
+                    desc.className = "skill-desc";
+                    desc.textContent = skill.desc;
+                    left.appendChild(label);
+                    left.appendChild(desc);
+
+                    const right = document.createElement("div");
+                    right.className = "skill-controls";
+
+                    const slider = document.createElement("input");
+                    slider.type = "range";
+                    slider.min = "0";
+                    slider.max = "20";
+                    slider.value = "0";
+                    slider.className = "skill-slider";
+                    slider.dataset.skillId = skill.id;
+
+                    const valueSpan = document.createElement("div");
+                    valueSpan.className = "skill-value";
+                    valueSpan.textContent = "0";
+
+                    slider.addEventListener("input", () => {
+                        valueSpan.textContent = slider.value;
+                    });
+
+                    const passionBtn = document.createElement("button");
+                    passionBtn.type = "button";
+                    passionBtn.className = "passion";
+                    passionBtn.dataset.skillId = skill.id;
+                    passionBtn.dataset.value = "0";
+
+                    function renderPassion() {
+                        const v = parseInt(passionBtn.dataset.value, 10);
+                        if (v === 0) {
+                            passionBtn.innerHTML = '<span class="flame">✖</span><span>0/2</span>';
+                        } else if (v === 1) {
+                            passionBtn.innerHTML = '<span class="flame">🔥</span><span>1/2</span>';
+                        } else {
+                            passionBtn.innerHTML = '<span class="flame">🔥🔥</span><span>2/2</span>';
+                        }
+                    }
+
+                    renderPassion();
+
+                    passionBtn.addEventListener("click", () => {
+                        let v = parseInt(passionBtn.dataset.value, 10);
+                        v = (v + 1) % 3;
+                        passionBtn.dataset.value = String(v);
+                        renderPassion();
+                    });
+
+                    right.appendChild(slider);
+                    right.appendChild(valueSpan);
+                    right.appendChild(passionBtn);
+
+                    row.appendChild(left);
+                    row.appendChild(right);
+                    grid.appendChild(row);
+                });
+            }
+
+            function collectSkills() {
+                const result = {};
+                $all("input.skill-slider").forEach(slider => {
+                    const id = slider.dataset.skillId;
+                    const passionBtn = document.querySelector(`.passion[data-skill-id="${id}"]`);
+                    const passion = passionBtn ? parseInt(passionBtn.dataset.value, 10) : 0;
+                    result[id] = {
+                        value: parseInt(slider.value, 10) || 0,
+                        passion
+                    };
+                });
+                return result;
+            }
+
+            // ========= НАВИГАЦИЯ ПО ШАГАМ =========
+
+            let currentStepIndex = 0;
+            let steps = [];
+            let totalSteps = 0;
+
+            function initWizard() {
+                steps = $all(".wizard-step");
+                totalSteps = steps.length;
+                updateStepUI();
+
+                const nextBtn = $("#next-btn");
+                const prevBtn = $("#prev-btn");
+                const resetBtn = $("#reset-btn");
+
+                nextBtn.addEventListener("click", () => {
+                    if (currentStepIndex === totalSteps - 1) {
+                        // последний шаг — генерируем персонажа
+                        generateCharacter();
+                        return;
+                    }
+
+                    if (!validateStep(currentStepIndex)) {
+                        return;
+                    }
+
+                    currentStepIndex++;
+                    updateStepUI();
+                });
+
+                prevBtn.addEventListener("click", () => {
+                    if (currentStepIndex > 0) {
+                        currentStepIndex--;
+                        updateStepUI();
+                    }
+                });
+
+                resetBtn.addEventListener("click", () => {
+                    const form = $("#wizard-form");
+                    form.reset();
+
+                    // Сброс навыков
+                    $all("input.skill-slider").forEach(slider => {
+                        slider.value = "0";
+                        const valueSpan = slider.parentElement.querySelector(".skill-value");
+                        if (valueSpan) valueSpan.textContent = "0";
+                    });
+                    $all(".passion").forEach(btn => {
+                        btn.dataset.value = "0";
+                        btn.innerHTML = '<span class="flame">✖</span><span>0/2</span>';
+                    });
+
+                    currentStepIndex = 0;
+                    updateStepUI();
+                    resetResult();
+                });
+            }
+
+            function updateStepUI() {
+                steps.forEach((step, idx) => {
+                    step.classList.toggle("active", idx === currentStepIndex);
+                });
+
+                const stepPill = $("#step-pill");
+                const stepLabel = $("#step-label");
+                stepPill.textContent = "Шаг " + (currentStepIndex + 1);
+                stepLabel.textContent = STEP_TITLES[currentStepIndex] || "";
+
+                const prevBtn = $("#prev-btn");
+                const nextBtn = $("#next-btn");
+
+                prevBtn.disabled = currentStepIndex === 0;
+
+                if (currentStepIndex === totalSteps - 1) {
+                    nextBtn.textContent = "Создать персонажа";
+                } else {
+                    nextBtn.textContent = "Далее";
+                }
+            }
+
+            // Мягкая проверка: не все вопросы — задаём вопрос пользователю
+            function validateStep(stepIndex) {
+                const stepEl = steps[stepIndex];
+                if (!stepEl) return true;
+
+                const radios = Array.from(stepEl.querySelectorAll('input[type="radio"]'));
+                if (!radios.length) return true;
+
+                const names = Array.from(new Set(radios.map(r => r.name)));
+                let missing = 0;
+                names.forEach(name => {
+                    const anyChecked = stepEl.querySelector(`input[type="radio"][name="${name}"]:checked`);
+                    if (!anyChecked) missing++;
+                });
+
+                if (missing > 0) {
+                    const proceed = window.confirm(
+                        `Вы ответили не на все вопросы этого шага (${names.length - missing} из ${names.length}). Всё равно перейти дальше?`
+                    );
+                    return proceed;
+                }
+                return true;
+            }
+
+            // ========= ЛОГИКА ПОДБОРА ПРЕДЫСТОРИЙ =========
+
+            function buildTagsFromAnswers() {
+                const tags = [];
+
+                // Детство
+                const child_place = getRadioValue("child_place");
+                if (child_place === "tribal") tags.push("tribal", "nature", "outdoors", "lowtech");
+                if (child_place === "rural") tags.push("rural", "farm");
+                if (child_place === "urban") tags.push("urban");
+                if (child_place === "underground") tags.push("underground", "rough");
+                if (child_place === "space") tags.push("space", "science");
+
+                const child_main_activity = getRadioValue("child_main_activity");
+                if (child_main_activity === "wild") tags.push("outdoors", "trouble");
+                if (child_main_activity === "help_family") tags.push("responsible", "farm");
+                if (child_main_activity === "books") tags.push("books", "indoors", "science");
+                if (child_main_activity === "trouble") tags.push("trouble", "rough");
+
+                const child_mood = getRadioValue("child_mood");
+                if (child_mood === "hard") tags.push("hard");
+                if (child_mood === "chaotic") tags.push("chaotic");
+                if (child_mood === "spoiled") tags.push("spoiled");
+
+                const child_env_pref = getRadioValue("child_env_pref");
+                if (child_env_pref === "indoors") tags.push("indoors");
+                if (child_env_pref === "outdoors") tags.push("outdoors");
+                if (child_env_pref === "mixed") tags.push("mixed_env");
+
+                const child_responsibility = getRadioValue("child_responsibility");
+                if (child_responsibility === "early") tags.push("responsible");
+                if (child_responsibility === "late") tags.push("spoiled");
+
+                // Взрослая жизнь
+                const job = getRadioValue("current_job");
+                if (job === "office_it") tags.push("office", "it", "intellectual");
+                if (job === "manual") tags.push("manual", "construction", "outdoor");
+                if (job === "creative") tags.push("creative", "art");
+                if (job === "service") tags.push("service", "people");
+                if (job === "med_help") tags.push("med", "care");
+                if (job === "logistics") tags.push("logistics", "management");
+                if (job === "mixed") tags.push("mixed", "chaotic");
+                if (job === "student") tags.push("studying", "intellectual");
+
+                const parallel = getRadioValue("parallel_projects");
+                if (parallel === "many") tags.push("projects_many", "chaotic");
+                if (parallel === "one") tags.push("focused");
+
+                const routine_attitude = getRadioValue("routine_attitude");
+                if (routine_attitude === "hate") tags.push("routine_hate");
+                if (routine_attitude === "like") tags.push("routine_like");
+
+                // Социалка и характер
+                const social_role = getRadioValue("social_role");
+                if (social_role === "introvert") tags.push("introvert");
+                if (social_role === "leader") tags.push("leader", "social");
+                if (social_role === "talker") tags.push("talker", "social");
+
+                const empathy = getRadioValue("empathy");
+                if (empathy === "high") tags.push("empathy_high", "care");
+                if (empathy === "low") tags.push("empathy_low");
+
+                const humor_style = getRadioValue("humor_style");
+                if (humor_style === "clown") tags.push("funny");
+
+                // Стресс и воля
+                const stress = getRadioValue("current_stress");
+                if (stress === "extreme" || stress === "high") tags.push("stress_high");
+
+                const combat_calm = getRadioValue("combat_calm");
+                if (combat_calm === "cold") tags.push("cold_blood");
+                if (combat_calm === "panic") tags.push("panic");
+
+                // Чистота
+                const tidiness = getRadioValue("tidiness");
+                if (tidiness === "messy") tags.push("messy", "tidiness_low");
+                if (tidiness === "tidy") tags.push("tidiness_high");
+
+                // Боль
+                const pain_tolerance = getRadioValue("pain_tolerance");
+                if (pain_tolerance === "low") tags.push("pain_low");
+                if (pain_tolerance === "high") tags.push("pain_high", "endurance_high");
+
+                // Учёба
+                const learning_speed = getRadioValue("learning_speed");
+                if (learning_speed === "fast") tags.push("learning_fast");
+                if (learning_speed === "slow") tags.push("study_low");
+
+                const study_patience = getRadioValue("study_patience");
+                if (study_patience === "high") tags.push("study_high");
+
+                // Настроение
+                const mood_swings = getRadioValue("mood_swings");
+                if (mood_swings === "often") tags.push("unstable_mood");
+
+                // Любовь к огню (немного фан-триггер на пиромана)
+                const build_priority = getRadioValue("build_priority");
+                if (build_priority === "aesthetic") tags.push("art");
+
+                return tags;
+            }
+
+            function pickBackstory(backstories, tags) {
+                let best = null;
+                let bestScore = -1;
+                backstories.forEach(bs => {
+                    let score = 0;
+                    bs.tags.forEach(t => {
+                        if (tags.includes(t)) score++;
+                    });
+                    // небольшой рандом, чтобы иногда выбирались соседние варианты
+                    score += Math.random() * 0.3;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = bs;
+                    }
+                });
+                return best || randChoice(backstories) || null;
+            }
+
+            function pickTraits(tags, skills, genes, diseases) {
+                const positives = TRAITS.filter(t => t.type === "good");
+                const negatives = TRAITS.filter(t => t.type === "bad");
+
+                const traitScores = t => {
+                    // базовый счёт по совпадению тегов
+                    let s = 0;
+                    t.tags.forEach(tag => {
+                        if (tags.includes(tag)) s += 2;
+                    });
+
+                    // немного учитывать навыки: если trait помечен, например, "shooting"
+                    if (t.tags.includes("shooting") && skills.shooting && skills.shooting.value >= 10) s += 2;
+                    if (t.tags.includes("melee") && skills.melee && skills.melee.value >= 10) s += 2;
+                    if (t.tags.includes("intellectual") && skills.intellectual && skills.intellectual.value >= 10) s += 2;
+
+                    // гены
+                    if (t.tags.includes("fast_runner") && genes.includes("fast_runner")) s += 2;
+                    if (t.tags.includes("unstable_mood") && (tags.includes("unstable_mood") || genes.includes("unstable_mood"))) s += 2;
+
+                    // болезни
+                    if (t.id === "wimp" && (diseases.includes("chronic_pain") || diseases.includes("bad_back"))) s += 2;
+
+                    // лёгкий рандом, чтобы не всегда одинаковый набор
+                    s += Math.random() * 1;
+                    return s;
+                };
+
+                const sortedPos = positives.slice().sort((a, b) => traitScores(b) - traitScores(a));
+                const sortedNeg = negatives.slice().sort((a, b) => traitScores(b) - traitScores(a));
+
+                const picked = [];
+                // 2–3 положительных
+                const goodCount = 2 + (Math.random() < 0.35 ? 1 : 0);
+                for (let i = 0; i < goodCount && i < sortedPos.length; i++) {
+                    picked.push(sortedPos[i]);
+                }
+                // 1–2 отрицательных
+                const badCount = 1 + (Math.random() < 0.4 ? 1 : 0);
+                for (let i = 0; i < badCount && i < sortedNeg.length; i++) {
+                    picked.push(sortedNeg[i]);
+                }
+
+                return shuffle(picked);
+            }
+
+            // ========= БАЛАНС ПЕРСОНАЖА =========
+
+            function computeBalance(skills, genes, implants, diseases, xenotype) {
+                let power = 0;
+
+                // Навыки
+                Object.values(skills).forEach(s => {
+                    power += s.value;
+                    power += s.passion * 2; // интерес → доп. сила
+                });
+
+                // Гены
+                genes.forEach(g => {
+                    if (POSITIVE_GENES.includes(g)) power += 12;
+                    if (NEGATIVE_GENES.includes(g)) power -= 10;
+                });
+
+                // Импланты
+                implants.forEach(imp => {
+                    if (POWER_IMPLANTS.includes(imp)) power += 15;
+                    if (WEAK_IMPLANTS.includes(imp)) power += 2; // слабый плюс
+                });
+
+                // Болезни
+                diseases.forEach(dis => {
+                    // лёгкие минусы
+                    if (["asthma", "bad_back", "scar_pain", "immunity_low", "migraine"].includes(dis)) power -= 8;
+                    // тяжёлые/ментальные
+                    if (["chronic_pain", "heart", "insomnia", "depression", "anxiety_disorder", "addiction_hard"].includes(dis)) power -= 14;
+                    if (dis === "addiction_soft") power -= 6;
+                });
+
+                // Ксенотип
+                if (xenotype === "baseline") power += 0;
+                if (xenotype === "highmate") power += 10; // сильная социалка
+                if (xenotype === "genie") power += 15;    // интеллект
+                if (xenotype === "waster") power += 5;    // узкоспециализированный
+                if (xenotype === "sanguophage") power += 40; // имба, дальше будет корректироваться
+                if (xenotype === "custom_mix") power += 15;
+
+                // Немного случайности
+                power += (Math.random() - 0.5) * 10;
+
+                let label = "Сбалансированный колонист";
+                let className = "ok";
+                let hint = "Персонаж выглядит относительно честным и сбалансированным для начала игры.";
+
+                if (power < 120) {
+                    label = "Слабый / хрупкий";
+                    className = "weak";
+                    hint = "Будет сложно выживать, но такая пешка отлично подходит для хардкора или драматичных историй.";
+                } else if (power < 190) {
+                    label = "Сбалансированный";
+                    className = "ok";
+                    hint = "Хорошая отправная точка: есть плюсы и минусы, но в целом честно.";
+                } else if (power < 250) {
+                    label = "Сильный";
+                    className = "strong";
+                    hint = "Персонаж довольно силён, имеет заметные преимущества. Рекомендуется добавить побольше недостатков в историях/чертах.";
+                } else {
+                    label = "Перекачанный (OP)";
+                    className = "op";
+                    hint = "Это почти герой, а не колонист. Для честного геймплея можно ограничить ресурсы/условия старта.";
+                }
+
+                return { power: Math.round(power), label, className, hint };
+            }
+
+            // ========= ГЕНЕРАЦИЯ РЕЗУЛЬТАТА =========
+
+            function resetResult() {
+                const res = $("#result");
+                if (!res) return;
+                res.innerHTML = `
+          <div class="empty-state">
+            Заполни шаги и на последнем нажми <strong>«Создать персонажа»</strong>, чтобы увидеть
+            предысторию, черты, навыки, гены и ксенотип.
+          </div>
+        `;
+            }
+
+            function generateCharacter() {
+                const name = ($("#name").value || "Безымянный колонист").trim();
+                const age = parseInt($("#age").value || "30", 10);
+
+                const vibe = getRadioValue("vibe");
+                const favColor = getRadioValue("fav_color") || "none";
+                const xenotype = getRadioValue("xenotype") || "baseline";
+
+                const diseases = getCheckedValues("diseases");
+                const implants = getCheckedValues("implants");
+                const genes = getCheckedValues("genes");
+
+                const skills = collectSkills();
+
+                const tags = buildTagsFromAnswers();
+                const childStory = pickBackstory(CHILDHOOD_BACKSTORIES, tags);
+                const adultStory = pickBackstory(ADULTHOOD_BACKSTORIES, tags);
+                const traits = pickTraits(tags, skills, genes, diseases);
+                const balance = computeBalance(skills, genes, implants, diseases, xenotype);
+
+                const resultEl = $("#result");
+                if (!resultEl) return;
+
+                // Вайб + цвет для flavor
+                let vibeText = "";
+                if (vibe === "calm") vibeText = "спокойный и надёжный выживший";
+                if (vibe === "chaotic") vibeText = "хаотичный гений-экспериментатор";
+                if (vibe === "dark") vibeText = "человек с тяжёлым, местами тёмным прошлым";
+                if (vibe === "bright") vibeText = "оптимист и поднимающий настроение член команды";
+
+                let colorText = "";
+                if (favColor === "green") colorText = "любит зелёные оттенки, ассоциируется с природой и техникой";
+                if (favColor === "blue") colorText = "тяготеет к синим оттенкам, холодным экранам и ночному небу";
+                if (favColor === "red") colorText = "любит красные акценты и агрессивный стиль";
+                if (favColor === "yellow") colorText = "предпочитает тёплые, солнечные цвета";
+                if (favColor === "dark") colorText = "чувствует себя комфортно в тёмных тонах и полумраке базы";
+                if (favColor === "pastel") colorText = "любит мягкие пастельные цвета, уют и ламповость";
+
+                // Описание ксенотипа
+                let xenoText = "";
+                if (xenotype === "baseline") xenoText = "Практически обычный человек без явных ксеномодификаций.";
+                if (xenotype === "highmate") xenoText = "Социально усиленный ксенотип, сильно влияющий на настроение и отношения.";
+                if (xenotype === "genie") xenoText = "Генный интеллект: слабее физически, но невероятно силён в науке и технологиях.";
+                if (xenotype === "waster") xenoText = "Токсичный выживший, комфортно чувствующий себя в заражённой и опасной среде.";
+                if (xenotype === "sanguophage") xenoText = "Сильный и живучий ксенотип с очень тяжёлыми моральными и игровыми последствиями.";
+                if (xenotype === "custom_mix") xenoText = "Кастомный микс генов: характер и способности зависят прежде всего от твоих ответов, а не от шаблона.";
+
+                // Список навыков
+                const skillsHtml = SKILL_CONFIG.map(sk => {
+                    const st = skills[sk.id] || { value: 0, passion: 0 };
+                    let passionText = "";
+                    if (st.passion === 1) passionText = "• интерес";
+                    if (st.passion === 2) passionText = "•• сильный интерес";
+                    return `
+            <div class="skill-item">
+              <div>${sk.label}</div>
+              <div class="skill-score">
+                ${st.value}
+                ${passionText ? `<small> (${passionText})</small>` : ""}
+              </div>
+            </div>
+          `;
+                }).join("");
+
+                // Черты
+                const traitsHtml = traits.map(t => {
+                    const typeEmoji = t.type === "good" ? "＋" : "−";
+                    return `<span class="pill">${typeEmoji} ${t.label}</span>`;
+                }).join("");
+
+                // Болезни / импланты / гены
+                const diseasesHtml = diseases.length
+                    ? diseases.map(d => `<span class="pill">${d}</span>`).join("")
+                    : '<span class="muted">Не выбраны (условно здоров)</span>';
+
+                const implantsHtml = implants.length
+                    ? implants.map(i => `<span class="pill">${i}</span>`).join("")
+                    : '<span class="muted">Нет протезов и имплантов</span>';
+
+                const genesHtml = genes.length
+                    ? genes.map(g => `<span class="pill">${g}</span>`).join("")
+                    : '<span class="muted">Без выраженных генетических особенностей (или минимальные)</span>';
+
+                resultEl.innerHTML = `
+          <div class="result-header">
+            <div class="result-name">${name}, ${isNaN(age) ? "" : age + " лет"}</div>
+            <div class="result-sub">
+              ${vibeText ? vibeText + ". " : ""}
+              ${colorText ? colorText : ""}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Баланс</div>
+            <div class="balance-pill ${balance.className}">
+              <span>${balance.label}</span>
+              <span>•</span>
+              <span>Показатель силы: ${balance.power}</span>
+            </div>
+            <div class="muted" style="margin-top:4px;">${balance.hint}</div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Предыстория</div>
+            <div class="pill-row">
+              ${childStory ? `<span class="pill">Детство: ${childStory.title}</span>` : ""}
+              ${adultStory ? `<span class="pill">Взрослая жизнь: ${adultStory.title}</span>` : ""}
+            </div>
+            <div class="muted">
+              ${childStory ? childStory.desc : ""}
+              ${adultStory ? "<br>" + adultStory.desc : ""}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Ксенотип</div>
+            <div class="pill-row">
+              <span class="pill">${xenotype || "baseline"}</span>
+            </div>
+            <div class="muted">${xenoText}</div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Черты характера</div>
+            <div class="pill-row">
+              ${traitsHtml || '<span class="muted">Черты не определены (что-то пошло не так?)</span>'}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Навыки</div>
+            <div class="skills-list">
+              ${skillsHtml}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Здоровье</div>
+            <div class="pill-row">
+              ${diseasesHtml}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Протезы и импланты</div>
+            <div class="pill-row">
+              ${implantsHtml}
+            </div>
+          </div>
+
+          <div class="result-block">
+            <div class="result-block-title">Гены</div>
+            <div class="pill-row">
+              ${genesHtml}
+            </div>
+          </div>
+        `;
+            }
+
+            // ========= СТАРТ ПРИ ЗАГРУЗКЕ =========
+
+            document.addEventListener("DOMContentLoaded", () => {
+                initSkills();
+                initWizard();
+                resetResult();
+            });
+        })();
+    </script>
+
+</body>
+</html>
+
+
